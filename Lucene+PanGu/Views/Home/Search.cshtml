@@ -1,0 +1,81 @@
+﻿
+@{
+    ViewData["Title"] = "Search";
+}
+<div><button type="button" id="createIndex" class="btn btn-info" style="margin-right: 5%">创建索引</button><span id="createResult" style="color: red"></span></div>
+<div style="display: flex; margin: 0 auto; width: 400px;">
+    <input type="text" id="words" class="form-control" placeholder="请输入查询单词" style="width: 300px; margin-right: 5%" />
+
+    <button type="button" id="search" class="btn btn-info" style="margin-right: 5%">搜索</button>
+</div>
+<div style="margin: 0 auto;width: 100px"> <span>耗时：</span><span id="time"></span></div>
+<div style="padding-bottom: 5%">
+    <div id="content">
+
+    </div>
+    <div id="pagination1"></div>
+</div>
+<script>
+    $("#search").click(function () {
+        init(1, 2);
+    });
+    function init(pageIndex, pageSize) {
+        $.ajax({
+            url: "/api/search/search",
+            type: "GET",
+            data: { keyWord: $("#words").val(), pageIndex: pageIndex, pageSize: pageSize },
+            success: function (data) {
+                console.log(data);
+                $("#time").html(data.ms);
+                $("#content").html("");
+                $.each(data.list.lsList,
+                    function (i, e) {
+                        var content = "<div class='panel panel-default'><div class='panel-body' style='text-align:center'>标题：" + e.title + "&nbsp;&nbsp;&nbsp;出现次数："+e.count+"</div>" +
+                            "<div class='panel-footer' style='height: 400px;overflow-y:scroll'>" + e.content + "</div></div>";
+                        $("#content").append(content);
+                    });
+                pagination("#pagination1", data.list.pageIndex, data.list.pageSize, data.list.totalPages, data.list.totalRows, init);
+
+            }
+        });
+    }
+    $("#createIndex").click(function () {
+        $.ajax({
+            url: "/api/search/createIndex",
+            type: "GET",
+            success: function (data) {
+                $("#createResult").html(data);
+            }
+        });
+    });
+    function pagination(id, pageIndex, pageSize, pageCount, totalRows, init) {
+        $(id).bs_pagination({
+            currentPage: pageIndex,
+            rowsPerPage: pageSize,
+            maxRowsPerPage: 100000,
+            totalPages: pageCount,
+            totalRows: totalRows,
+            showGoToPage: true,
+            showRowsPerPage: true,
+            showRowsInfo: true,
+            showRowsDefaultInfo: true,
+            navGoToPageContainerClass: "col-xs-6 col-sm-4 col-md-2 row-space",
+            navGoToPageIconClass: "glyphicon glyphicon-arrow-right",
+            navGoToPageClass: "form-control small-input",
+            navRowsPerPageContainerClass: "col-xs-6 col-sm-4 col-md-1 row-space",
+            navRowsPerPageIconClass: "glyphicon glyphicon-th-list",
+            navRowsPerPageClass: "form-control small-input",
+            navListContainerClass: "col-xs-12 col-sm-12 col-md-5",
+            navInfoContainerClass: "col-xs-12 col-sm-4 col-md-5 row-space",
+            directURL: false, // or a function with current page as argument
+            disableTextSelectionInNavPane: true, // disable text selection and double click
+            bootstrap_version: "3",
+            // bootstrap 3
+            containerClass: "container-fluid",
+            mainWrapperClass: "row",
+            onChangePage: function () { // returns page_num and rows_per_page after a link has clicked
+                init(arguments[1].currentPage, arguments[1].rowsPerPage);
+            }
+        });
+    }
+</script>

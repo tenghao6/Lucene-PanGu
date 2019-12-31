@@ -1,0 +1,23 @@
+﻿
+@{
+    ViewData["Title"] = "Participle";
+}
+
+<div style="display: flex; margin: 0 auto; width: 400px;">
+    <input type="text" id="words" class="form-control" placeholder="请输入内容" style="width: 300px; margin-right: 5%" />
+
+    <button type="button" id="confirm" class="btn btn-info" style="margin-right: 5%">分词</button>
+</div>
+<span style="color: red">结果：</span><span id="data"></span>
+<script>
+    $("#confirm").click(function () {
+        $.ajax({
+            url: "/api/search/standard",
+            data: { words: $("#words").val()},
+            success: function (data) {
+                $("#data").html(data);
+            }
+        });
+    });
+
+</script>
